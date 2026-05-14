@@ -114,12 +114,34 @@
             <li>[today(yyyymmdd)]</li>
             <li>[today(yyyy/mm/dd)]</li>
             <li>[today(yyyy年m月d日)]</li>
+            <li>[today(yyyy年m月d日(aaa))]</li>
             <li>[yesterday(yyyymmdd)]</li>
             <li>[yesterday(yyyy/mm/dd)]</li>
             <li>[yesterday(yyyy年m月d日)]</li>
             <li>[thismonth(m)]</li>
             <li>[nextmonth(m)]</li>
         </ul>
+        <details style="margin-top:16px;">
+            <summary style="cursor:pointer;font-size:13px;font-weight:bold;">使えるトークン</summary>
+            <table style="font-size:12px;margin-top:8px;border-collapse:collapse;width:100%;">
+                <tr><td style="padding:2px 4px;"><code>yyyy</code></td><td style="padding:2px 4px;color:#666;">年（4桁）</td></tr>
+                <tr><td style="padding:2px 4px;"><code>yy</code></td><td style="padding:2px 4px;color:#666;">年（下2桁）</td></tr>
+                <tr><td style="padding:2px 4px;"><code>mm</code></td><td style="padding:2px 4px;color:#666;">月（2桁）</td></tr>
+                <tr><td style="padding:2px 4px;"><code>m</code></td><td style="padding:2px 4px;color:#666;">月（1〜2桁）</td></tr>
+                <tr><td style="padding:2px 4px;"><code>dd</code></td><td style="padding:2px 4px;color:#666;">日（2桁）</td></tr>
+                <tr><td style="padding:2px 4px;"><code>d</code></td><td style="padding:2px 4px;color:#666;">日（1〜2桁）</td></tr>
+                <tr><td style="padding:2px 4px;"><code>dddd</code></td><td style="padding:2px 4px;color:#666;">曜日（英語フル）</td></tr>
+                <tr><td style="padding:2px 4px;"><code>ddd</code></td><td style="padding:2px 4px;color:#666;">曜日（英語略称）</td></tr>
+                <tr><td style="padding:2px 4px;"><code>aaaa</code></td><td style="padding:2px 4px;color:#666;">曜日（日本語フル）</td></tr>
+                <tr><td style="padding:2px 4px;"><code>aaa</code></td><td style="padding:2px 4px;color:#666;">曜日（日本語）</td></tr>
+                <tr><td style="padding:2px 4px;"><code>HH</code></td><td style="padding:2px 4px;color:#666;">時（2桁）</td></tr>
+                <tr><td style="padding:2px 4px;"><code>H</code></td><td style="padding:2px 4px;color:#666;">時（1〜2桁）</td></tr>
+                <tr><td style="padding:2px 4px;"><code>MM</code></td><td style="padding:2px 4px;color:#666;">分（2桁）</td></tr>
+                <tr><td style="padding:2px 4px;"><code>M</code></td><td style="padding:2px 4px;color:#666;">分（1〜2桁）</td></tr>
+                <tr><td style="padding:2px 4px;"><code>SS</code></td><td style="padding:2px 4px;color:#666;">秒（2桁）</td></tr>
+                <tr><td style="padding:2px 4px;"><code>S</code></td><td style="padding:2px 4px;color:#666;">秒（1〜2桁）</td></tr>
+            </table>
+        </details>
     </div>
 
     <script>
@@ -136,40 +158,62 @@
             autoResizeTextarea(textBox);
         });
 
+        function formatDate(date, fmt) {
+            const yyyy = date.getFullYear();
+            const yy   = String(yyyy).slice(-2);
+            const mm   = String(date.getMonth() + 1).padStart(2, '0');
+            const m    = date.getMonth() + 1;
+            const dd   = String(date.getDate()).padStart(2, '0');
+            const d    = date.getDate();
+            const HH   = String(date.getHours()).padStart(2, '0');
+            const H    = date.getHours();
+            const MM   = String(date.getMinutes()).padStart(2, '0');
+            const M    = date.getMinutes();
+            const SS   = String(date.getSeconds()).padStart(2, '0');
+            const S    = date.getSeconds();
+            const dow  = date.getDay();
+            const dowEn     = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+            const dowShEn   = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+            const dowJaFull = ['日曜日','月曜日','火曜日','水曜日','木曜日','金曜日','土曜日'];
+            const dowJa     = ['日','月','火','水','木','金','土'];
+
+            return fmt
+                .replace(/dddd/g, dowEn[dow])
+                .replace(/ddd/g,  dowShEn[dow])
+                .replace(/aaaa/g, dowJaFull[dow])
+                .replace(/aaa/g,  dowJa[dow])
+                .replace(/yyyy/g, yyyy)
+                .replace(/yy/g,   yy)
+                .replace(/mm/g,   mm)
+                .replace(/dd/g,   dd)
+                .replace(/HH/g,   HH)
+                .replace(/MM/g,   MM)
+                .replace(/SS/g,   SS)
+                .replace(/m/g,    m)
+                .replace(/d/g,    d)
+                .replace(/H/g,    H)
+                .replace(/M/g,    M)
+                .replace(/S/g,    S);
+        }
+
         function replaceDatePlaceholders(text) {
             const today = new Date();
-            const yyyy = today.getFullYear();
-            const mm = String(today.getMonth() + 1).padStart(2, '0');
-            const dd = String(today.getDate()).padStart(2, '0');
-            const m = today.getMonth() + 1;
-            const d = today.getDate();
 
             const yesterday = new Date(today);
-            const dayOfWeek = today.getDay();
-            if (dayOfWeek === 1) {
+            if (today.getDay() === 1) {
                 yesterday.setDate(today.getDate() - 3);
             } else {
                 yesterday.setDate(today.getDate() - 1);
             }
-            const y_yyyy = yesterday.getFullYear();
-            const y_mm = String(yesterday.getMonth() + 1).padStart(2, '0');
-            const y_dd = String(yesterday.getDate()).padStart(2, '0');
-            const y_m = yesterday.getMonth() + 1;
-            const y_d = yesterday.getDate();
 
-            const thisMonth = today.getMonth() + 1;
-            let nextMonth = today.getMonth() + 2;
-            if (nextMonth > 12) nextMonth = 1;
+            const thisMonthDate = new Date(today.getFullYear(), today.getMonth(), 1);
+            const nextMonthDate = new Date(today.getFullYear(), today.getMonth() + 1, 1);
 
             return text
-                .replace(/\[today\(yyyymmdd\)\]/g, `${yyyy}${mm}${dd}`)
-                .replace(/\[today\(yyyy\/mm\/dd\)\]/g, `${yyyy}/${mm}/${dd}`)
-                .replace(/\[today\(yyyy年m月d日\)\]/g, `${yyyy}年${m}月${d}日`)
-                .replace(/\[yesterday\(yyyymmdd\)\]/g, `${y_yyyy}${y_mm}${y_dd}`)
-                .replace(/\[yesterday\(yyyy\/mm\/dd\)\]/g, `${y_yyyy}/${y_mm}/${y_dd}`)
-                .replace(/\[yesterday\(yyyy年m月d日\)\]/g, `${y_yyyy}年${y_m}月${y_d}日`)
-                .replace(/\[thismonth\(m\)\]/g, `${thisMonth}`)
-                .replace(/\[nextmonth\(m\)\]/g, `${nextMonth}`);
+                .replace(/\[today\(([^)]+)\)\]/g,     (_, fmt) => formatDate(today,         fmt))
+                .replace(/\[yesterday\(([^)]+)\)\]/g, (_, fmt) => formatDate(yesterday,     fmt))
+                .replace(/\[thismonth\(([^)]+)\)\]/g, (_, fmt) => formatDate(thisMonthDate, fmt))
+                .replace(/\[nextmonth\(([^)]+)\)\]/g, (_, fmt) => formatDate(nextMonthDate, fmt));
         }
 
         function flashCopied(button, textWhenCopied = "コピーしました！", duration = 1400) {
