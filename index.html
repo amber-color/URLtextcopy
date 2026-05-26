@@ -235,15 +235,16 @@
         <div class="sidebar-section">
             <h3>テンプレート</h3>
             <ul class="template-list">
-                <li>[today(yyyymmdd)]</li>
-                <li>[today(yyyy/mm/dd)]</li>
-                <li>[today(yyyy年m月d日)]</li>
-                <li>[today(yyyy年m月d日(aaa))]</li>
-                <li>[yesterday(yyyymmdd)]</li>
-                <li>[yesterday(yyyy/mm/dd)]</li>
-                <li>[yesterday(yyyy年m月d日)]</li>
-                <li>[thismonth(m)]</li>
-                <li>[nextmonth(m)]</li>
+                <li>[date(0, yyyymmdd)]</li>
+                <li>[date(0, yyyy/mm/dd)]</li>
+                <li>[date(0, yyyy年m月d日)]</li>
+                <li>[date(0, yyyy年m月d日(aaa))]</li>
+                <li>[date(-1, yyyymmdd)]</li>
+                <li>[date(-1, yyyy年m月d日(aaa))]</li>
+                <li>[date(1, yyyy年m月d日)]</li>
+                <li>[month(0, m)]</li>
+                <li>[month(1, m)]</li>
+                <li>[month(-1, yyyy年m月)]</li>
             </ul>
         </div>
 
@@ -325,21 +326,16 @@
         function replaceDatePlaceholders(text) {
             const today = new Date();
 
-            const yesterday = new Date(today);
-            if (today.getDay() === 1) {
-                yesterday.setDate(today.getDate() - 3);
-            } else {
-                yesterday.setDate(today.getDate() - 1);
-            }
-
-            const thisMonthDate = new Date(today.getFullYear(), today.getMonth(), 1);
-            const nextMonthDate = new Date(today.getFullYear(), today.getMonth() + 1, 1);
-
             return text
-                .replace(/\[today\(([^)]+)\)\]/g,     (_, fmt) => formatDate(today,         fmt))
-                .replace(/\[yesterday\(([^)]+)\)\]/g, (_, fmt) => formatDate(yesterday,     fmt))
-                .replace(/\[thismonth\(([^)]+)\)\]/g, (_, fmt) => formatDate(thisMonthDate, fmt))
-                .replace(/\[nextmonth\(([^)]+)\)\]/g, (_, fmt) => formatDate(nextMonthDate, fmt));
+                .replace(/\[date\((-?\d+),\s*(.*?)\)\]/g, (_, n, fmt) => {
+                    const d = new Date(today);
+                    d.setDate(today.getDate() + Number(n));
+                    return formatDate(d, fmt);
+                })
+                .replace(/\[month\((-?\d+),\s*(.*?)\)\]/g, (_, n, fmt) => {
+                    const d = new Date(today.getFullYear(), today.getMonth() + Number(n), 1);
+                    return formatDate(d, fmt);
+                });
         }
 
         function flashCopied(button, textWhenCopied = "コピーしました！", duration = 1400) {
