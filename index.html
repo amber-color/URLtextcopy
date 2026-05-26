@@ -245,7 +245,11 @@
                 <li>[month(0, m)]</li>
                 <li>[month(1, m)]</li>
                 <li>[month(-1, yyyy年m月)]</li>
+                <li>[workday(-1, yyyymmdd)]</li>
+                <li>[workday(-1, yyyy年m月d日(aaa))]</li>
+                <li>[workday(1, yyyy年m月d日)]</li>
             </ul>
+            <p style="margin-top:8px;font-size:11px;color:var(--text-muted);">workday は土日・日本の祝日を除く営業日で計算</p>
         </div>
 
         <div class="sidebar-section">
@@ -275,6 +279,37 @@
         const textBox = document.getElementById('textBox');
         const copyLinkBtn = document.getElementById('copyLinkBtn');
         const copyTextBtn = document.getElementById('copyTextBtn');
+
+        // Japanese holiday cache: { "YYYY-MM-DD": "祝日名", ... }
+        let jpHolidays = {};
+
+        async function fetchJpHolidays() {
+            try {
+                const res = await fetch('https://holidays-jp.github.io/api/v1/date.json');
+                jpHolidays = await res.json();
+            } catch (_) {
+                // fallback: weekends only
+            }
+        }
+
+        function isWorkday(date) {
+            const dow = date.getDay();
+            if (dow === 0 || dow === 6) return false;
+            const key = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
+            return !(key in jpHolidays);
+        }
+
+        function addWorkdays(base, n) {
+            const d = new Date(base);
+            if (n === 0) return d;
+            const step = n > 0 ? 1 : -1;
+            let remaining = Math.abs(n);
+            while (remaining > 0) {
+                d.setDate(d.getDate() + step);
+                if (isWorkday(d)) remaining--;
+            }
+            return d;
+        }
 
         function autoResizeTextarea(el) {
             el.style.height = 'auto';
@@ -332,6 +367,9 @@
                     d.setDate(today.getDate() + Number(n));
                     return formatDate(d, fmt);
                 })
+                .replace(/\[workday\((-?\d+),\s*(.*?)\)\]/g, (_, n, fmt) => {
+                    return formatDate(addWorkdays(today, Number(n)), fmt);
+                })
                 .replace(/\[month\((-?\d+),\s*(.*?)\)\]/g, (_, n, fmt) => {
                     const d = new Date(today.getFullYear(), today.getMonth() + Number(n), 1);
                     return formatDate(d, fmt);
@@ -356,6 +394,7 @@
         }
 
         window.addEventListener('DOMContentLoaded', () => {
+            fetchJpHolidays();
             const hashText = decodeURIComponent(location.hash.slice(1));
             if (hashText) {
                 textBox.value = hashText;
