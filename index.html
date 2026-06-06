@@ -5,6 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>URLテキストコピーツール</title>
+    <script src="https://cdn.jsdelivr.net/npm/lz-string@1.5.0/libs/lz-string.min.js"></script>
     <style>
         :root {
             --bg: #f5f5f7;
@@ -474,8 +475,15 @@
             });
         }
 
+        function decodeHash(hash) {
+            const raw = hash.slice(1);
+            if (!raw) return '';
+            const lz = LZString.decompressFromEncodedURIComponent(raw);
+            return lz !== null ? lz : decodeURIComponent(raw);
+        }
+
         window.addEventListener('DOMContentLoaded', () => {
-            const hashText = decodeURIComponent(location.hash.slice(1));
+            const hashText = decodeHash(location.hash);
             if (hashText) {
                 textBox.value = hashText;
                 autoResizeTextarea(textBox);
@@ -489,7 +497,7 @@
 
         copyLinkBtn.addEventListener('click', () => {
             const rawText = textBox.value;
-            const encodedText = encodeURIComponent(rawText);
+            const encodedText = LZString.compressToEncodedURIComponent(rawText);
             const baseUrl = location.origin + location.pathname;
             const fullUrl = `${baseUrl}#${encodedText}`;
             navigator.clipboard.writeText(fullUrl).then(() => {
