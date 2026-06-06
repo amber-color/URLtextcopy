@@ -475,15 +475,9 @@
             });
         }
 
-        function decodeHash(hash) {
-            const raw = hash.slice(1);
-            if (!raw) return '';
-            const lz = LZString.decompressFromEncodedURIComponent(raw);
-            return lz !== null ? lz : decodeURIComponent(raw);
-        }
-
         window.addEventListener('DOMContentLoaded', () => {
-            const hashText = decodeHash(location.hash);
+            const raw = location.hash.slice(1);
+            const hashText = raw ? LZString.decompressFromEncodedURIComponent(raw) : '';
             if (hashText) {
                 textBox.value = hashText;
                 autoResizeTextarea(textBox);
