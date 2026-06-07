@@ -481,7 +481,7 @@
             if (hashText) {
                 textBox.value = hashText;
                 autoResizeTextarea(textBox);
-                copyProcessedText(hashText, copyTextBtn);
+                copyProcessedText(hashText, copyTextBtn).then(() => window.close());
             }
         });
 
