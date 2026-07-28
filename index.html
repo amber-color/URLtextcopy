@@ -462,17 +462,16 @@
             const originalText = button.textContent;
             button.textContent = textWhenCopied;
             button.classList.add("copied");
-            setTimeout(() => {
+            return new Promise(resolve => setTimeout(() => {
                 button.textContent = originalText;
                 button.classList.remove("copied");
-            }, duration);
+                resolve();
+            }, duration));
         }
 
         function copyProcessedText(text, button) {
             const replacedText = replaceDatePlaceholders(text);
-            return navigator.clipboard.writeText(replacedText).then(() => {
-                flashCopied(button);
-            });
+            return navigator.clipboard.writeText(replacedText).then(() => flashCopied(button));
         }
 
         window.addEventListener('DOMContentLoaded', () => {
@@ -481,7 +480,9 @@
             if (hashText) {
                 textBox.value = hashText;
                 autoResizeTextarea(textBox);
-                copyProcessedText(hashText, copyTextBtn).then(() => window.close());
+                copyProcessedText(hashText, copyTextBtn)
+                    .then(() => window.close())
+                    .catch(() => {});
             }
         });
 
